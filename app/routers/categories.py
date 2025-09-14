@@ -1,0 +1,29 @@
+from fastapi import APIRouter
+
+router = APIRouter(
+    prefix="/categories", tags=["categories"],
+)
+
+
+@router.get("/")
+async def get_all_categories():
+    """Возвращает список всех категорий товаров."""
+    return {"message": 'заглушка'}
+
+
+@router.post("/")
+async def create_category():
+    """Создает новую категорию."""
+    return {"message": "заглушка"}
+
+
+@router.put("/{category_id}")
+async def update_category(category_id: int):
+    """Обновляет категорию по ее ID"""
+    return {"message": f"Категория с ID={category_id} обновлена."}
+
+
+@router.delete("/{category_id}")
+async def delete_category(category_id: int):
+    """Удаляет категорию по ее ID"""
+    return {"message": f"Категория с ID={category_id} удалена."}
