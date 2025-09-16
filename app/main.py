@@ -1,6 +1,6 @@
 import uvicorn
+from app.routers import categories, products
 from fastapi import FastAPI
-from routers import categories, products
 
 app = FastAPI(
     title="FastAPI интернет-магазин", version="0.1.0"
