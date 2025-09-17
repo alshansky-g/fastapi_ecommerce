@@ -61,4 +61,4 @@ async def delete_category(category_id: int,
         CategoryModel.id == category_id).values(is_active=False))
     db.commit()
     return {"status": "success",
-            "message": f"Категория с ID={category_id} удалена."}
+            "message": "Category markes as inactive."}
