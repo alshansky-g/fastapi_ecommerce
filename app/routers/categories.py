@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
@@ -41,10 +41,32 @@ async def create_category(category: CategoryCreate,
     return db_category
 
 
-@router.put("/{category_id}")
-async def update_category(category_id: int):
+@router.put("/{category_id}", response_model=CategorySchema)
+async def update_category(category_id: int,
+                          category: Annotated[CategoryCreate, Body()],
+                          db: Annotated[Session, Depends(get_db)]):
     """Обновляет категорию по ее ID"""
-    return {"message": f"Категория с ID={category_id} обновлена."}
+    stmt = select(CategoryModel).where(
+        CategoryModel.id == category_id, CategoryModel.is_active
+    )
+    category_from_db = db.scalars(stmt).first()
+    if category_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Category not found")
+    if category.parent_id is not None:
+        parent_stmt = select(CategoryModel).where(
+            CategoryModel.id == category.parent_id, CategoryModel.is_active
+        )
+        parent = db.scalars(parent_stmt).first()
+        if parent is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="Parent category not found")
+    db.execute(update(CategoryModel).where(
+        CategoryModel.id == category_id).values(
+            **category.model_dump()))
+    db.commit()
+    db.refresh(category_from_db)
+    return category_from_db
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_200_OK)
