@@ -14,13 +14,15 @@ router = APIRouter(
 )
 
 
-@router.get("/")
-async def get_all_categories():
+@router.get("/", response_model=list[CategorySchema])
+async def get_all_categories(db: Annotated[Session, Depends(get_db)]):
     """Возвращает список всех категорий товаров."""
-    return {"message": 'заглушка'}
+    stmt = select(CategoryModel).where(CategoryModel.is_active)
+    categories = db.scalars(stmt).all()
+    return categories
 
 
-@router.post("/", response_model=CategoryModel,
+@router.post("/", response_model=CategorySchema,
              status_code=status.HTTP_201_CREATED)
 async def create_category(category: CategoryCreate,
                           db: Annotated[Session, Depends(get_db)]):
@@ -45,7 +47,18 @@ async def update_category(category_id: int):
     return {"message": f"Категория с ID={category_id} обновлена."}
 
 
-@router.delete("/{category_id}")
-async def delete_category(category_id: int):
+@router.delete("/{category_id}", status_code=status.HTTP_200_OK)
+async def delete_category(category_id: int,
+                          db: Annotated[Session, Depends(get_db)]):
     """Удаляет категорию по ее ID"""
-    return {"message": f"Категория с ID={category_id} удалена."}
+    stmt = select(CategoryModel).where(
+        CategoryModel.id == category_id, CategoryModel.is_active)
+    category = db.scalars(stmt).first()
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Category not found")
+    db.execute(update(CategoryModel).where(
+        CategoryModel.id == category_id).values(is_active=False))
+    db.commit()
+    return {"status": "success",
+            "message": f"Категория с ID={category_id} удалена."}
