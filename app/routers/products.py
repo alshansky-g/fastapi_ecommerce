@@ -14,10 +14,11 @@ router = APIRouter(
 )
 
 
-@router.get("/")
-async def get_all_products():
+@router.get("/", response_model=list[ProductSchema])
+async def get_all_products(db: Annotated[Session, Depends(get_db)]):
     """Возвращает список всех товаров."""
-    return {"message": "заглушка"}
+    products = db.scalars(select(Product).where(Product.is_active)).all()
+    return products
 
 
 @router.post("/", response_model=ProductSchema)
