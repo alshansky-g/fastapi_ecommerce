@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, status
 from sqlalchemy import select, update
 
 from app.crud import (
@@ -10,6 +10,7 @@ from app.crud import (
 )
 from app.dependencies import DBSession
 from app.models import Product
+from app.models.categories import Category
 from app.schemas import Product as ProductSchema
 from app.schemas import ProductCreate
 
@@ -21,11 +22,14 @@ router = APIRouter(
 @router.get("/", response_model=list[ProductSchema])
 async def get_all_products(db: DBSession):
     """Возвращает список всех товаров."""
-    products = db.scalars(select(Product).where(Product.is_active)).all()
+    products = db.scalars(
+        select(Product).join(Category).where(
+            Product.is_active, Category.is_active, Product.stock > 0)).all()
     return products
 
 
-@router.post("/", response_model=ProductSchema)
+@router.post("/", response_model=ProductSchema,
+             status_code=status.HTTP_201_CREATED)
 async def create_product(product: Annotated[ProductCreate, Body()],
                          db: DBSession):
     """Создаёт новый товар."""
