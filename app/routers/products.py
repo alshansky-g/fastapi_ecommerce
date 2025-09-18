@@ -45,8 +45,9 @@ async def create_product(product: Annotated[ProductCreate, Body()],
 async def get_products_by_category(category_id: int, db: DBSession):
     """Возвращает список товаров в указанной категории."""
     get_category_or_404(db, category_id)
+    get_product_category_or_400(db, category_id)
     products = db.scalars(select(Product).where(
-        Product.category_id == category_id)).all()
+        Product.category_id == category_id, Product.is_active)).all()
     return products
 
 
