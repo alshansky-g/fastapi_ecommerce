@@ -1,10 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 
-from app.db_depends import get_db
+from app.dependencies import DBSession
 from app.models import Category, Product
 from app.schemas import Product as ProductSchema
 from app.schemas import ProductCreate
@@ -15,7 +14,7 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[ProductSchema])
-async def get_all_products(db: Annotated[Session, Depends(get_db)]):
+async def get_all_products(db: DBSession):
     """Возвращает список всех товаров."""
     products = db.scalars(select(Product).where(Product.is_active)).all()
     return products
@@ -23,7 +22,7 @@ async def get_all_products(db: Annotated[Session, Depends(get_db)]):
 
 @router.post("/", response_model=ProductSchema)
 async def create_product(product: Annotated[ProductCreate, Body()],
-                         db: Annotated[Session, Depends(get_db)]):
+                         db: DBSession):
     """Создаёт новый товар."""
     category = db.scalar(select(Category).where(
         Category.id == product.category_id))
@@ -38,9 +37,7 @@ async def create_product(product: Annotated[ProductCreate, Body()],
 
 
 @router.get("/category/{category_id}", response_model=list[ProductSchema])
-async def get_products_by_category(
-    category_id: int,
-    db: Annotated[Session, Depends(get_db)]):
+async def get_products_by_category(category_id: int, db: DBSession):
     """Возвращает список товаров в указанной категории."""
     category = db.scalar(select(Category).where(Category.id == category_id))
     if category is None:
@@ -51,8 +48,8 @@ async def get_products_by_category(
     return products
 
 
-@router.get("/{product_id}")
-async def get_product(product_id: int):
+@router.get("/{product_id}", response_model=ProductSchema)
+async def get_product(product_id: int, db: DBSession):
     """Возвращает детальную информацию о товаре по его ID"""
     return {"message": f"Детали товара {product_id}."}
 

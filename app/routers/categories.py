@@ -1,10 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status
 from sqlalchemy import select, update
-from sqlalchemy.orm import Session
 
-from app.db_depends import get_db
+from app.dependencies import DBSession
 from app.models.categories import Category as CategoryModel
 from app.schemas import Category as CategorySchema
 from app.schemas import CategoryCreate
@@ -15,7 +14,7 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[CategorySchema])
-async def get_all_categories(db: Annotated[Session, Depends(get_db)]):
+async def get_all_categories(db: DBSession):
     """Возвращает список всех категорий товаров."""
     stmt = select(CategoryModel).where(CategoryModel.is_active)
     categories = db.scalars(stmt).all()
@@ -25,7 +24,7 @@ async def get_all_categories(db: Annotated[Session, Depends(get_db)]):
 @router.post("/", response_model=CategorySchema,
              status_code=status.HTTP_201_CREATED)
 async def create_category(category: CategoryCreate,
-                          db: Annotated[Session, Depends(get_db)]):
+                          db: DBSession):
     """Создает новую категорию."""
     if category.parent_id is not None:
         stmt = select(CategoryModel).where(
@@ -44,7 +43,7 @@ async def create_category(category: CategoryCreate,
 @router.put("/{category_id}", response_model=CategorySchema)
 async def update_category(category_id: int,
                           category: Annotated[CategoryCreate, Body()],
-                          db: Annotated[Session, Depends(get_db)]):
+                          db: DBSession):
     """Обновляет категорию по ее ID"""
     stmt = select(CategoryModel).where(
         CategoryModel.id == category_id, CategoryModel.is_active
@@ -71,7 +70,7 @@ async def update_category(category_id: int,
 
 @router.delete("/{category_id}", status_code=status.HTTP_200_OK)
 async def delete_category(category_id: int,
-                          db: Annotated[Session, Depends(get_db)]):
+                          db: DBSession):
     """Удаляет категорию по ее ID"""
     stmt = select(CategoryModel).where(
         CategoryModel.id == category_id, CategoryModel.is_active)
