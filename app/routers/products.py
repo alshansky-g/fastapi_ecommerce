@@ -1,4 +1,13 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Body, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.db_depends import get_db
+from app.models import Category, Product
+from app.schemas import Product as ProductSchema
+from app.schemas import ProductCreate
 
 router = APIRouter(
     prefix="/products", tags=["products"]
@@ -11,10 +20,20 @@ async def get_all_products():
     return {"message": "заглушка"}
 
 
-@router.post("/")
-async def create_product():
+@router.post("/", response_model=ProductSchema)
+async def create_product(product: Annotated[ProductCreate, Body()],
+                         db: Annotated[Session, Depends(get_db)]):
     """Создаёт новый товар."""
-    return {"message": "заглушка"}
+    category = db.scalar(select(Category).where(
+        Category.id == product.category_id))
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Category not found")
+    product_db = Product(**product.model_dump())
+    db.add(product_db)
+    db.commit()
+    db.refresh(product_db)
+    return product_db
 
 
 @router.get("/category/{category_id}")
