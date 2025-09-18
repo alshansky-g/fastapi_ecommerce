@@ -1,3 +1,10 @@
+"""
+Модуль с функциями crud.
+Основное предназначение - проверка существования или активности
+товара/категории товаров. Если не существует, возбуждается
+соответствующее исключение. Если существует - возвращается
+соответствующий объект.
+"""
 from sqlalchemy import select
 
 from app.dependencies import DBSession
@@ -12,6 +19,9 @@ from app.models.products import Product
 
 
 def get_category_or_404(db: DBSession, category_id: int) -> Category:
+    """
+    Проверка, активна ли категория товара.
+    """
     category = db.scalar(select(Category).where(
         Category.id == category_id, Category.is_active
     ))
@@ -21,6 +31,9 @@ def get_category_or_404(db: DBSession, category_id: int) -> Category:
 
 
 def get_parent_category_or_404(db: DBSession, category_id: int) -> Category:
+    """
+    Проверка, активна ли родительская категория.
+    """
     category = db.scalar(select(Category).where(
         Category.id == category_id, Category.is_active
     ))
@@ -30,6 +43,9 @@ def get_parent_category_or_404(db: DBSession, category_id: int) -> Category:
 
 
 def get_product_or_404(db: DBSession, product_id: int) -> Product:
+    """
+    Проверка, существует ли товар.
+    """
     product = db.scalar(select(Product).where(
         Product.id == product_id, Product.is_active
     ))
@@ -40,6 +56,9 @@ def get_product_or_404(db: DBSession, product_id: int) -> Product:
 
 def get_product_category_or_400(
         db: DBSession, category_id: int) -> Category:
+    """
+    Проверка, активна ли категория найденного товара.
+    """
     category = db.scalar(select(Category).where(
         Category.id == category_id, Category.is_active
     ))

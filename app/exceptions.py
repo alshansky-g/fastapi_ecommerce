@@ -1,3 +1,6 @@
+"""
+В модуле исключения, которые возбуждаются при crud операциях.
+"""
 from fastapi import HTTPException, status
 
 CategoryNotFound = HTTPException(status_code=status.HTTP_404_NOT_FOUND,

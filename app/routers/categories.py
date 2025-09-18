@@ -1,3 +1,6 @@
+"""
+Модуль с эндпоинтами для crud операций с категориями товаров.
+"""
 from typing import Annotated
 
 from fastapi import APIRouter, Body, status
