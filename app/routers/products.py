@@ -37,10 +37,14 @@ async def create_product(product: Annotated[ProductCreate, Body()],
     return product_db
 
 
-@router.get("/category/{category_id}")
-async def get_products_by_category(category_id: int):
+@router.get("/category/{category_id}", response_model=list[ProductSchema])
+async def get_products_by_category(
+    category_id: int,
+    db: Annotated[Session, Depends(get_db)]):
     """Возвращает список товаров в указанной категории."""
-    return {"message": "заглушка"}
+    products = db.scalars(select(Product).where(
+        Product.category_id == category_id)).all()
+    return products
 
 
 @router.get("/{product_id}")
