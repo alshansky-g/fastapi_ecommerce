@@ -68,6 +68,9 @@ async def update_product(product_id: int,
 
 
 @router.delete("/{product_id}")
-async def delete_product(product_id: int):
+async def delete_product(product_id: int, db: DBSession):
     """Удаляет товар по его ID"""
-    return {"message": f"Товар {product_id} удален."}
+    product = get_product_or_404(db, product_id)
+    product.is_active = False
+    db.commit()
+    return {"status": "success", "message": "Product marked as inactive."}
