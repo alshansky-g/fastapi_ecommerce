@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Body
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.crud import (
     get_category_or_404,
@@ -53,10 +53,18 @@ async def get_product(product_id: int, db: DBSession):
     return product
 
 
-@router.put("/{product_id}")
-async def update_product(product_id: int):
+@router.put("/{product_id}", response_model=ProductSchema)
+async def update_product(product_id: int,
+                         product: Annotated[ProductCreate, Body()],
+                         db: DBSession):
     """Обновляет товар по его ID"""
-    return {"message": f"Товар {product_id} обновлен."}
+    product_db = get_product_or_404(db, product_id)
+    get_product_category_or_400(db, product.category_id)
+    db.execute(update(Product).where(Product.id == product_id)
+               .values(**product.model_dump()))
+    db.commit()
+    db.refresh(product_db)
+    return product_db
 
 
 @router.delete("/{product_id}")
