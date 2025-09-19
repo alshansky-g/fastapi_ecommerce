@@ -61,10 +61,9 @@ async def update_category(category_id: int,
 @router.delete("/{category_id}", status_code=status.HTTP_200_OK)
 async def delete_category(category_id: int,
                           db: AsyncDBSession):
-    """Удаляет категорию по ее ID"""
-    await get_category_or_404(db, category_id)
+    """Удаляет(деактивирует) категорию по ее ID, устанавливая is_active=False"""
+    category = await get_category_or_404(db, category_id)
     await db.execute(update(CategoryModel).where(
         CategoryModel.id == category_id).values(is_active=False))
     await db.commit()
-    return {"status": "success",
-            "message": "Category marked as inactive."}
+    return category
