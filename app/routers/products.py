@@ -79,6 +79,7 @@ async def update_product(product_id: int,
 async def delete_product(product_id: int, db: DBSession):
     """Удаляет товар по его ID"""
     product = get_product_or_404(db, product_id)
+    get_product_category_or_400(db, product.category_id)
     product.is_active = False
     db.commit()
     return {"status": "success", "message": "Product marked as inactive."}
