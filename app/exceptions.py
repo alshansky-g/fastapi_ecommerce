@@ -15,3 +15,6 @@ ParentCategoryNotFound = HTTPException(status_code=status.HTTP_404_NOT_FOUND,
 
 ProductNotFound = HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Product not found")
+
+CategorySelfParentError = HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                        detail="Category cannot be its own parent")

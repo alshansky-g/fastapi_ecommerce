@@ -11,7 +11,7 @@ from app.crud import (
     get_product_category_or_400,
     get_product_or_404,
 )
-from app.dependencies import DBSession
+from app.dependencies import AsyncDBSession
 from app.models import Product
 from app.models.categories import Category
 from app.schemas import Product as ProductSchema
@@ -23,7 +23,7 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[ProductSchema])
-async def get_all_products(db: DBSession):
+async def get_all_products(db: AsyncDBSession):
     """Возвращает список всех товаров."""
     products = db.scalars(
         select(Product).join(Category).where(
@@ -34,7 +34,7 @@ async def get_all_products(db: DBSession):
 @router.post("/", response_model=ProductSchema,
              status_code=status.HTTP_201_CREATED)
 async def create_product(product: Annotated[ProductCreate, Body()],
-                         db: DBSession):
+                         db: AsyncDBSession):
     """Создаёт новый товар."""
     get_product_category_or_400(db, product.category_id)
     product_db = Product(**product.model_dump())
@@ -45,7 +45,7 @@ async def create_product(product: Annotated[ProductCreate, Body()],
 
 
 @router.get("/category/{category_id}", response_model=list[ProductSchema])
-async def get_products_by_category(category_id: int, db: DBSession):
+async def get_products_by_category(category_id: int, db: AsyncDBSession):
     """Возвращает список товаров в указанной категории."""
     get_category_or_404(db, category_id)
     products = db.scalars(select(Product).where(
@@ -54,7 +54,7 @@ async def get_products_by_category(category_id: int, db: DBSession):
 
 
 @router.get("/{product_id}", response_model=ProductSchema)
-async def get_product(product_id: int, db: DBSession):
+async def get_product(product_id: int, db: AsyncDBSession):
     """Возвращает детальную информацию о товаре по его ID"""
     product = get_product_or_404(db, product_id)
     get_product_category_or_400(db, product.category_id)
@@ -64,7 +64,7 @@ async def get_product(product_id: int, db: DBSession):
 @router.put("/{product_id}", response_model=ProductSchema)
 async def update_product(product_id: int,
                          product: Annotated[ProductCreate, Body()],
-                         db: DBSession):
+                         db: AsyncDBSession):
     """Обновляет товар по его ID"""
     product_db = get_product_or_404(db, product_id)
     get_product_category_or_400(db, product.category_id)
@@ -76,7 +76,7 @@ async def update_product(product_id: int,
 
 
 @router.delete("/{product_id}")
-async def delete_product(product_id: int, db: DBSession):
+async def delete_product(product_id: int, db: AsyncDBSession):
     """Удаляет товар по его ID"""
     product = get_product_or_404(db, product_id)
     get_product_category_or_400(db, product.category_id)

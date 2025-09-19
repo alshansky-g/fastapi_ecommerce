@@ -7,7 +7,7 @@
 """
 from sqlalchemy import select
 
-from app.dependencies import DBSession
+from app.dependencies import AsyncDBSession
 from app.exceptions import (
     CategoryNotFound,
     ParentCategoryNotFound,
@@ -18,11 +18,11 @@ from app.models.categories import Category
 from app.models.products import Product
 
 
-def get_category_or_404(db: DBSession, category_id: int) -> Category:
+async def get_category_or_404(db: AsyncDBSession, category_id: int) -> Category:
     """
     Проверка, активна ли категория товара.
     """
-    category = db.scalar(select(Category).where(
+    category = await db.scalar(select(Category).where(
         Category.id == category_id, Category.is_active
     ))
     if category is None:
@@ -30,11 +30,11 @@ def get_category_or_404(db: DBSession, category_id: int) -> Category:
     return category
 
 
-def get_parent_category_or_404(db: DBSession, category_id: int) -> Category:
+async def get_parent_category_or_404(db: AsyncDBSession, category_id: int) -> Category:
     """
     Проверка, активна ли родительская категория.
     """
-    category = db.scalar(select(Category).where(
+    category = await db.scalar(select(Category).where(
         Category.id == category_id, Category.is_active
     ))
     if category is None:
@@ -42,11 +42,11 @@ def get_parent_category_or_404(db: DBSession, category_id: int) -> Category:
     return category
 
 
-def get_product_or_404(db: DBSession, product_id: int) -> Product:
+async def get_product_or_404(db: AsyncDBSession, product_id: int) -> Product:
     """
     Проверка, существует ли товар.
     """
-    product = db.scalar(select(Product).where(
+    product = await db.scalar(select(Product).where(
         Product.id == product_id, Product.is_active
     ))
     if product is None:
@@ -54,12 +54,12 @@ def get_product_or_404(db: DBSession, product_id: int) -> Product:
     return product
 
 
-def get_product_category_or_400(
-        db: DBSession, category_id: int) -> Category:
+async def get_product_category_or_400(
+        db: AsyncDBSession, category_id: int) -> Category:
     """
     Проверка, активна ли категория найденного товара.
     """
-    category = db.scalar(select(Category).where(
+    category = await db.scalar(select(Category).where(
         Category.id == category_id, Category.is_active
     ))
     if category is None:

@@ -1,8 +1,8 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db_depends import get_db
+from app.db_depends import get_async_db
 
-DBSession = Annotated[Session, Depends(get_db)]
+AsyncDBSession = Annotated[AsyncSession, Depends(get_async_db)]
