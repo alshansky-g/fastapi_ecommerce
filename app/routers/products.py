@@ -25,10 +25,10 @@ router = APIRouter(
 @router.get("/", response_model=list[ProductSchema])
 async def get_all_products(db: AsyncDBSession):
     """Возвращает список всех товаров."""
-    products = db.scalars(
+    products = await db.scalars(
         select(Product).join(Category).where(
-            Product.is_active, Category.is_active, Product.stock > 0)).all()
-    return products
+            Product.is_active, Category.is_active, Product.stock > 0))
+    return products.all()
 
 
 @router.post("/", response_model=ProductSchema,
@@ -36,28 +36,27 @@ async def get_all_products(db: AsyncDBSession):
 async def create_product(product: Annotated[ProductCreate, Body()],
                          db: AsyncDBSession):
     """Создаёт новый товар."""
-    get_product_category_or_400(db, product.category_id)
+    await get_product_category_or_400(db, product.category_id)
     product_db = Product(**product.model_dump())
     db.add(product_db)
-    db.commit()
-    db.refresh(product_db)
+    await db.commit()
     return product_db
 
 
 @router.get("/category/{category_id}", response_model=list[ProductSchema])
 async def get_products_by_category(category_id: int, db: AsyncDBSession):
     """Возвращает список товаров в указанной категории."""
-    get_category_or_404(db, category_id)
-    products = db.scalars(select(Product).where(
-        Product.category_id == category_id, Product.is_active)).all()
-    return products
+    await get_category_or_404(db, category_id)
+    products = await db.scalars(select(Product).where(
+        Product.category_id == category_id, Product.is_active))
+    return products.all()
 
 
 @router.get("/{product_id}", response_model=ProductSchema)
 async def get_product(product_id: int, db: AsyncDBSession):
     """Возвращает детальную информацию о товаре по его ID"""
-    product = get_product_or_404(db, product_id)
-    get_product_category_or_400(db, product.category_id)
+    product = await get_product_or_404(db, product_id)
+    await get_product_category_or_400(db, product.category_id)
     return product
 
 
@@ -66,20 +65,19 @@ async def update_product(product_id: int,
                          product: Annotated[ProductCreate, Body()],
                          db: AsyncDBSession):
     """Обновляет товар по его ID"""
-    product_db = get_product_or_404(db, product_id)
-    get_product_category_or_400(db, product.category_id)
-    db.execute(update(Product).where(Product.id == product_id)
+    product_db = await get_product_or_404(db, product_id)
+    await get_product_category_or_400(db, product.category_id)
+    await db.execute(update(Product).where(Product.id == product_id)
                .values(**product.model_dump()))
-    db.commit()
-    db.refresh(product_db)
+    await db.commit()
     return product_db
 
 
-@router.delete("/{product_id}")
+@router.delete("/{product_id}", response_model=ProductSchema)
 async def delete_product(product_id: int, db: AsyncDBSession):
     """Удаляет товар по его ID"""
-    product = get_product_or_404(db, product_id)
-    get_product_category_or_400(db, product.category_id)
+    product = await get_product_or_404(db, product_id)
+    await get_product_category_or_400(db, product.category_id)
     product.is_active = False
-    db.commit()
-    return {"status": "success", "message": "Product marked as inactive."}
+    await db.commit()
+    return product
