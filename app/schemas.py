@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class CategoryCreate(BaseModel):
@@ -73,4 +73,19 @@ class Product(BaseModel):
     category_id: int = Field(description="ID категории")
     is_active: bool = Field(description="Активность товара")
 
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserCreate(BaseModel):
+    email: EmailStr = Field(description="Email пользователя")
+    password: str = Field(min_length=8, description="Пароль (минимкм 8 символов)")
+    role: str = Field(default="buyer", pattern="^(buyer|seller)$",
+                      description="Роль: 'buyer' или 'seller")
+
+
+class User(BaseModel):
+    id: int
+    email: EmailStr
+    is_active: bool
+    role: str
     model_config = ConfigDict(from_attributes=True)
