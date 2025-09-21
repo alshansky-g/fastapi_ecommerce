@@ -18,3 +18,5 @@ ProductNotFound = HTTPException(status_code=status.HTTP_404_NOT_FOUND,
 
 CategorySelfParentError = HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                         detail="Category cannot be its own parent")
+UserExistsError = HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Email already registered")

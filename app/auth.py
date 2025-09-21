@@ -1,11 +1,9 @@
-from warnings import deprecated
-
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def has_password(password: str) -> str:
+def hash_password(password: str) -> str:
     """Преобразует пароль в хэш с использованием bcrypt."""
     return pwd_context.hash(password)
 
