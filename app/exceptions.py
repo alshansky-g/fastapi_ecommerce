@@ -37,3 +37,8 @@ ExpiredTokenError = HTTPException(
             detail="Token has expired",
             headers={"WWW-Authenticate": "Bearer"},
         )
+IncorrectCredentialsError = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
