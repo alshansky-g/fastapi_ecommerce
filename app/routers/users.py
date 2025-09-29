@@ -1,11 +1,13 @@
 from typing import Annotated
 
+import jwt
 from fastapi import APIRouter, Body, status
 from sqlalchemy import select
 
-from app.auth import create_access_token, hash_password, verify_password
+from app.auth import create_access_token, create_refresh_token, hash_password, verify_password
+from app.config import config
 from app.dependencies import AsyncDBSession, FormData
-from app.exceptions import IncorrectCredentialsError, UserExistsError
+from app.exceptions import IncorrectCredentialsError, RefreshTokenValidationError, UserExistsError
 from app.models.users import User as UserModel
 from app.schemas import User as UserSchema
 from app.schemas import UserCreate
@@ -38,4 +40,28 @@ async def login(form_data: FormData, db: AsyncDBSession):
         raise IncorrectCredentialsError
     access_token = create_access_token(data={
         "sub": user.email, "role": user.role, "id": user.id})
+    refresh_token = create_refresh_token(data={
+        "sub": user.email, "role": user.role, "id": user.id})
+    return {"access_token": access_token, "refresh_token": refresh_token,
+            "token_type": "bearer"}
+
+
+@router.post("/refresh-token")
+async def refresh_token(refresh_token: Annotated[str, Body()],
+                        db: AsyncDBSession):
+    """Обновляет access-токен с помощью refresh-токена."""
+    try:
+        payload = jwt.decode(refresh_token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            raise RefreshTokenValidationError
+    except jwt.exceptions.InvalidTokenError:
+        raise RefreshTokenValidationError from None
+    user = await db.scalar(select(UserModel).where(
+        UserModel.email == email, UserModel.is_active))
+    if user is None:
+        raise RefreshTokenValidationError
+    access_token = create_access_token(data={
+        "sub": user.email, "role": user.role, "id": user.id
+    })
     return {"access_token": access_token, "token_type": "bearer"}

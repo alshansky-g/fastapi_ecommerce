@@ -44,6 +44,11 @@ IncorrectCredentialsError = HTTPException(
     detail="Incorrect email or password",
     headers={"WWW-Authenticate": "Bearer"},
 )
+RefreshTokenValidationError = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate refresh token",
+    headers={"WWW-Authenticate": "Bearer"},
+)
 
 """
 Authorization exceptions
@@ -53,4 +58,4 @@ UserNotSellerError = HTTPException(
 )
 NotProductOwnerError = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN, detail="You can only change your own products"
-    )
+)
