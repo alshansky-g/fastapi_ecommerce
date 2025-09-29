@@ -1,7 +1,12 @@
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from dotenv import load_dotenv
 
-load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = "HS256"
+class Config(BaseSettings):
+    ALGORITHM: str = ""
+    SECRET_KEY: str = ""
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 0
+
+    model_config = SettingsConfigDict(env_file=".env")
+
+
+config = Config()

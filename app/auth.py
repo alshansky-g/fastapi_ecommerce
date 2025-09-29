@@ -6,13 +6,12 @@ from fastapi import Depends
 from passlib.context import CryptContext
 from sqlalchemy import select
 
-from app.config import ALGORITHM, SECRET_KEY
+from app.config import config
 from app.dependencies import AsyncDBSession, Token
 from app.exceptions import BadCredentialsError, ExpiredTokenError, UserNotSellerError
 from app.models.users import User as UserModel
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 def hash_password(password: str) -> str:
@@ -28,15 +27,15 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(data: dict):
     """Создаёт JWT с payload(sub, role, id, exp)."""
     to_encode = data.copy()
-    expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(UTC) + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
 
 
 async def get_current_user(token: Token, db: AsyncDBSession):
     """Проверяет JWT и возвращает пользователя из базы данных."""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
             raise BadCredentialsError
