@@ -32,6 +32,14 @@ def create_access_token(data: dict):
     return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
 
 
+def create_refresh_token(data: dict):
+    """Создаёт refresh-токен с длительным сроком действия."""
+    to_encode = data.copy()
+    expire = datetime.now(UTC) + timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
+
+
 async def get_current_user(token: Token, db: AsyncDBSession):
     """Проверяет JWT и возвращает пользователя из базы данных."""
     try:
