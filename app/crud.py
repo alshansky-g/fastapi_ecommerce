@@ -5,7 +5,7 @@
 соответствующее исключение. Если существует - возвращается
 соответствующий объект.
 """
-from sqlalchemy import select
+from sqlalchemy import func, select, update
 
 from app.dependencies import AsyncDBSession
 from app.exceptions import (
@@ -13,9 +13,11 @@ from app.exceptions import (
     ParentCategoryNotFound,
     ProductCategoryNotFound,
     ProductNotFound,
+    ReviewAlreadyExists,
 )
 from app.models.categories import Category
 from app.models.products import Product
+from app.models.reviews import Review
 
 
 async def get_category_or_404(db: AsyncDBSession, category_id: int) -> Category:
@@ -65,3 +67,19 @@ async def get_product_category_or_400(
     if category is None:
         raise ProductCategoryNotFound
     return category
+
+
+async def update_product_rating(db: AsyncDBSession, product_id: int) -> None:
+    avg_grade = await db.scalar(select(func.avg(Review.grade)).where(
+        Review.is_active))
+    await db.execute(update(Product).where(Product.id == product_id)
+                     .values(rating=avg_grade))
+    await db.commit()
+
+
+async def check_review_exists(db, user_id: int, product_id: int) -> None:
+    review_exists = await db.scalar(select(Review).where(
+        Review.user_id == user_id, Review.product_id == product_id
+    ))
+    if review_exists:
+        raise ReviewAlreadyExists

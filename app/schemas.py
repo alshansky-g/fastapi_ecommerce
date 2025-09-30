@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
@@ -89,3 +91,25 @@ class User(BaseModel):
     is_active: bool
     role: str
     model_config = ConfigDict(from_attributes=True)
+
+
+class ReviewCreate(BaseModel):
+    product_id: int = Field(description="Идентификатор товара")
+    comment: str = Field(description="Текст отзыва")
+    grade: int = Field(ge=1, le=5, description="Оценка товара")
+
+
+class Review(BaseModel):
+    id: int = Field(description="Идентификатор отзыва")
+    user_id: int = Field(description="Идентификатор пользователя, оставившего отзыв")
+    product_id: int = Field(description="Идентификатор товара")
+    comment: str | None = Field(description="Текст отзыва")
+    comment_date: datetime = Field(description="Дата создания отзыва")
+    grade: int = Field(description="Оценка товара")
+    is_active: bool = Field(description="Активность отзыва")
+
+    model_config = ConfigDict(
+        json_encoders={
+            datetime: lambda v: v.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+        }
+    )

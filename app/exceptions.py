@@ -17,7 +17,8 @@ ParentCategoryNotFound = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND, detail="Parent category not found"
 )
 
-ProductNotFound = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+ProductNotFound = HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="Product not found or inactive")
 
 CategorySelfParentError = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST, detail="Category cannot be its own parent"
@@ -58,4 +59,12 @@ UserNotSellerError = HTTPException(
 )
 NotProductOwnerError = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN, detail="You can only change your own products"
+)
+UserNotBuyer = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="Only authenticated buyers can perform this action"
+)
+ReviewAlreadyExists = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="You can only create one review per product"
 )
