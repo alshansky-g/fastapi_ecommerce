@@ -3,10 +3,9 @@
 """
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Body, status
 from sqlalchemy import select, update
 
-from app.auth import get_current_seller
 from app.crud import (
     get_category_or_404,
     get_product_category_or_400,
@@ -16,15 +15,13 @@ from app.dependencies import AsyncDBSession
 from app.exceptions import NotProductOwnerError
 from app.models import Product
 from app.models.categories import Category
-from app.models.users import User
+from app.rbac import Seller
 from app.schemas import Product as ProductSchema
 from app.schemas import ProductCreate
 
 router = APIRouter(
     prefix="/products", tags=["products"]
 )
-
-UserSeller = Annotated[User, Depends(get_current_seller)]
 
 
 @router.get("/", response_model=list[ProductSchema])
@@ -39,7 +36,8 @@ async def get_all_products(db: AsyncDBSession):
 @router.post("/", response_model=ProductSchema,
              status_code=status.HTTP_201_CREATED)
 async def create_product(product: Annotated[ProductCreate, Body()],
-                         db: AsyncDBSession, current_user: UserSeller):
+                         db: AsyncDBSession,
+                         current_user: Seller):
     """Создаёт новый товар, привязанный к текущему продавцу."""
     await get_product_category_or_400(db, product.category_id)
     product_db = Product(**product.model_dump(), seller_id=current_user.id)
@@ -68,7 +66,8 @@ async def get_product(product_id: int, db: AsyncDBSession):
 @router.put("/{product_id}", response_model=ProductSchema)
 async def update_product(product_id: int,
                          product: Annotated[ProductCreate, Body()],
-                         db: AsyncDBSession, current_user: UserSeller):
+                         db: AsyncDBSession,
+                         current_user: Seller):
     """Обновляет товар, если он принадлежит текущему продавцу."""
     product_db = await get_product_or_404(db, product_id)
     if product_db.seller_id != current_user.id:
@@ -82,7 +81,7 @@ async def update_product(product_id: int,
 
 @router.delete("/{product_id}", response_model=ProductSchema)
 async def delete_product(product_id: int, db: AsyncDBSession,
-                         current_user: UserSeller):
+                         current_user: Seller):
     """Удаляет товар по его ID"""
     product = await get_product_or_404(db, product_id)
     if product.seller_id != current_user.id:

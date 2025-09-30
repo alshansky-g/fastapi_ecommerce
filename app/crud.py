@@ -1,10 +1,4 @@
-"""
-Модуль с функциями crud.
-Основное предназначение - проверка существования или активности
-товара/категории товаров. Если не существует, возбуждается
-соответствующее исключение. Если существует - возвращается
-соответствующий объект.
-"""
+"""Модуль с функциями для работы с базой данных."""
 from sqlalchemy import func, select, update
 
 from app.dependencies import AsyncDBSession
@@ -70,6 +64,7 @@ async def get_product_category_or_400(
 
 
 async def update_product_rating(db: AsyncDBSession, product_id: int) -> None:
+    """Обновление средней оценки товара."""
     avg_grade = await db.scalar(select(func.avg(Review.grade)).where(
         Review.is_active))
     await db.execute(update(Product).where(Product.id == product_id)
@@ -78,6 +73,7 @@ async def update_product_rating(db: AsyncDBSession, product_id: int) -> None:
 
 
 async def check_review_exists(db, user_id: int, product_id: int) -> None:
+    """Предотвращает добавление нескольких отзывов к товару."""
     review_exists = await db.scalar(select(Review).where(
         Review.user_id == user_id, Review.product_id == product_id
     ))

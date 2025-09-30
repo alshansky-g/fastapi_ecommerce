@@ -54,15 +54,12 @@ RefreshTokenValidationError = HTTPException(
 """
 Authorization exceptions
 """
-UserNotSellerError = HTTPException(
-    status_code=status.HTTP_403_FORBIDDEN, detail="Only sellers can perform this action"
+AuthorizationError = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="You're not authorized to perform this action"
 )
 NotProductOwnerError = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN, detail="You can only change your own products"
-)
-UserNotBuyer = HTTPException(
-    status_code=status.HTTP_403_FORBIDDEN,
-    detail="Only authenticated buyers can perform this action"
 )
 ReviewAlreadyExists = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,

@@ -1,14 +1,12 @@
 from datetime import UTC, datetime, timedelta
-from typing import Annotated
 
 import jwt
-from fastapi import Depends
 from passlib.context import CryptContext
 from sqlalchemy import select
 
 from app.config import config
 from app.dependencies import AsyncDBSession, Token
-from app.exceptions import BadCredentialsError, ExpiredTokenError, UserNotBuyer, UserNotSellerError
+from app.exceptions import BadCredentialsError, ExpiredTokenError
 from app.models.users import User as UserModel
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -56,19 +54,3 @@ async def get_current_user(token: Token, db: AsyncDBSession):
     if user is None:
         raise BadCredentialsError
     return user
-
-
-async def get_current_seller(
-        current_user: Annotated[UserModel, Depends(get_current_user)]):
-    """Проверяет, что роль пользователя 'seller'."""
-    if current_user.role != "seller":
-        raise UserNotSellerError
-    return current_user
-
-
-async def get_current_buyer(
-        current_user: Annotated[UserModel, Depends(get_current_user)]):
-    """Проверяет, что роль пользователя 'buyer'."""
-    if current_user.role != "buyer":
-        raise UserNotBuyer
-    return current_user
