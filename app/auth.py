@@ -1,3 +1,6 @@
+"""
+Модуль для основных операций, связанных с аутентификацией.
+"""
 from datetime import UTC, datetime, timedelta
 
 import jwt

@@ -1,12 +1,9 @@
 """
-This module contains exceptions for different categories of operations.
+Модуль с наиболее востребованными исключениями.
 """
-
 from fastapi import HTTPException, status
 
-"""
-CRUD exceptions.
-"""
+# Исключения CRUD.
 CategoryNotFound = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
 
 ProductCategoryNotFound = HTTPException(
@@ -26,10 +23,12 @@ CategorySelfParentError = HTTPException(
 UserExistsError = HTTPException(
     status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
 )
+ReviewNotFoundError = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND, detail="Review not found or inactive"
+)
 
-"""
-Authentication exceptions.
-"""
+
+# Исключения аутентификации.
 BadCredentialsError = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Could not validate credentials",
@@ -51,9 +50,7 @@ RefreshTokenValidationError = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
-"""
-Authorization exceptions
-"""
+# Исключения авторизации
 AuthorizationError = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail="You're not authorized to perform this action"

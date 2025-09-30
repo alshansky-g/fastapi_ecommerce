@@ -8,6 +8,7 @@ from app.exceptions import (
     ProductCategoryNotFound,
     ProductNotFound,
     ReviewAlreadyExists,
+    ReviewNotFoundError,
 )
 from app.models.categories import Category
 from app.models.products import Product
@@ -72,10 +73,19 @@ async def update_product_rating(db: AsyncDBSession, product_id: int) -> None:
     await db.commit()
 
 
-async def check_review_exists(db, user_id: int, product_id: int) -> None:
+async def check_review_exists(db: AsyncDBSession, user_id: int, product_id: int) -> None:
     """Предотвращает добавление нескольких отзывов к товару."""
     review_exists = await db.scalar(select(Review).where(
         Review.user_id == user_id, Review.product_id == product_id
     ))
     if review_exists:
         raise ReviewAlreadyExists
+
+
+async def get_review_or_404(db: AsyncDBSession, review_id: int) -> Review:
+    """Проверка, существует ли отзыв."""
+    review = await db.scalar(select(Review).where(
+        Review.id == review_id))
+    if review is None:
+        raise ReviewNotFoundError
+    return review

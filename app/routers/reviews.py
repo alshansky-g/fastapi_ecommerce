@@ -6,10 +6,15 @@ from typing import Annotated
 from fastapi import APIRouter, Body
 from sqlalchemy import select
 
-from app.crud import check_review_exists, get_product_or_404, update_product_rating
+from app.crud import (
+    check_review_exists,
+    get_product_or_404,
+    get_review_or_404,
+    update_product_rating,
+)
 from app.dependencies import AsyncDBSession
 from app.models.reviews import Review as ReviewModel
-from app.rbac import Buyer
+from app.rbac import Admin, Buyer
 from app.schemas import Review, ReviewCreate
 
 router = APIRouter(tags=["reviews"])
@@ -43,3 +48,13 @@ async def create_review(user: Buyer,
     await db.commit()
     await update_product_rating(db=db, product_id=review.product_id)
     return review_db
+
+
+@router.delete("/reviews/{review_id}")
+async def delete_review(review_id: int, db: AsyncDBSession, current_user: Admin):
+    """Выполняет мягкое удаление товара, устанавливая is_active = False"""
+    review = await get_review_or_404(db, review_id)
+    review.is_active = False
+    await db.commit()
+    await update_product_rating(db=db, product_id=review.product_id)
+    return {"message": "Review deleted"}
