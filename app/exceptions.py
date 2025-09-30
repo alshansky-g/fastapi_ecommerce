@@ -26,6 +26,10 @@ UserExistsError = HTTPException(
 ReviewNotFoundError = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND, detail="Review not found or inactive"
 )
+ReviewAlreadyExists = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="You can only create one review per product"
+)
 
 
 # Исключения аутентификации.
@@ -57,8 +61,4 @@ AuthorizationError = HTTPException(
 )
 NotProductOwnerError = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN, detail="You can only change your own products"
-)
-ReviewAlreadyExists = HTTPException(
-    status_code=status.HTTP_403_FORBIDDEN,
-    detail="You can only create one review per product"
 )
