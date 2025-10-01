@@ -3,3 +3,4 @@ sandbox.py
 .mypy_cache
 ecommerce.db
 .env
+info.log
