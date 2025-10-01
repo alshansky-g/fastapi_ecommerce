@@ -16,7 +16,7 @@ app.include_router(reviews.router)
 
 
 @app.get("/")
-async def root(message: str, delay: int | float = 5):
+async def root(message: str):
     """Корневой маршрут, подтверждающий, что API работает."""
-    call_background_task.delay(message, delay)
+    call_background_task.apply_async(args=[message], countdown=6)
     return {"message": "API интернет магазина"}
