@@ -1,7 +1,7 @@
 """Initial migration for PostgreSQL
 
 Revision ID: 263149d0cdc2
-Revises: 
+Revises:
 Create Date: 2025-09-19 21:44:20.947703
 
 """
@@ -41,7 +41,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.drop_table('testik')
     # ### end Alembic commands ###
 
 
