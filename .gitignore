@@ -4,3 +4,4 @@ sandbox.py
 ecommerce.db
 .env
 info.log
+certbot
